@@ -4,23 +4,28 @@
  Author:	Nathan Durnan
 */
 
-#include <DMXSerial.h>
+#include <Conceptinetics.h>
 #include <Adafruit_NeoPixel.h>
 #include "fixture.h"
 
+
+const int StatusPin = 13;
 
 #define DMX_ADDRESS 1	// Starting address for DMX Fixture
 
 #define PIN_PIXELS  6
 #define NUM_PIXELS 8
 
-fixture myFixture = fixture(DMX_ADDRESS, NUM_PIXELS, PIN_PIXELS, (NEO_RGB + NEO_KHZ800));
+DMX_Slave dmx_slave ((NUM_PIXELS * 3)+2);
+
+fixture myFixture = fixture(NUM_PIXELS, PIN_PIXELS, (NEO_GRB + NEO_KHZ800));
 
 /*----------------------------------------
 ----------------------------------------*/
 void setup() {
-	pinMode(LED_BUILTIN, OUTPUT);
-	DMXSerial.init(DMXReceiver);
+  pinMode(StatusPin, OUTPUT);
+  dmx_slave.enable();
+  dmx_slave.setStartAddress(DMX_ADDRESS);
 	myFixture.init();
 
 }
@@ -28,13 +33,16 @@ void setup() {
 /*----------------------------------------
 ----------------------------------------*/
 void loop() {
-	unsigned long lastDMXPacket = DMXSerial.noDataSince();
-	if (lastDMXPacket < 5000) {
-		myFixture.update(&DMXSerial);
-	}
-	else {
-		// revert to a default state
-	}
-
-
+	myFixture.update(&dmx_slave);
+  if (myFixture.getLevel() > 127) {
+    digitalWrite(StatusPin, HIGH);
+  }
+  else {
+    digitalWrite(StatusPin, LOW);
+  }
+  dmx_slave.disable();
+  delay(5);
+  myFixture.updateOutput();
+  dmx_slave.enable();
+  delay(25);
 }
