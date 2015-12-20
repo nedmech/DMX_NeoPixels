@@ -50,15 +50,14 @@ private:
 	uint8_t _level;
 	fixtureChannelStruct* _channel;
 	uint8_t _strobe;
-	Adafruit_NeoPixel _pixels;
 
 public:
-	fixture(uint16_t n = 8, uint8_t p = 6, neoPixelType t = NEO_RGB + NEO_KHZ800);
+	fixture(uint16_t a = 1, uint16_t n = 8);
 	~fixture();
 	void init(void);
 	void update(DMX_Slave* myDMX);
-	void updateOutput(void);
-  uint16_t getLevel(void);
+	void updateOutput(Adafruit_NeoPixel* myPixels, uint8_t startPixel);
+	uint16_t getLevel(void);
 };
 
 

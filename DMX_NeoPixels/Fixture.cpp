@@ -13,13 +13,10 @@ Constructor - assign:
 * p = NeoPixel output pin
 * t = NeoPixel configuration type
 ----------------------------------------*/
-fixture::fixture(uint16_t n, uint8_t p, neoPixelType t){
-  _address = 1;
-  _channels = n;
+fixture::fixture(uint16_t a, uint16_t n) {
+	_address = a;
+	_channels = n;
 	_channel = (fixtureChannelStruct*)malloc(_channels * sizeof(fixtureChannelStruct));
-	_pixels.updateLength(n);
-	_pixels.setPin(p);
-	_pixels.updateType(t);
 }
 
 /*----------------------------------------
@@ -35,7 +32,6 @@ fixture::~fixture() {
 Initialize the object
 ----------------------------------------*/
 void fixture::init(void) {
-	_pixels.begin();
 	_level = DMX_OFF;
 	_strobe = DMX_OFF;
 	for (uint16_t i = 0; i < _channels; i++) {
@@ -63,16 +59,19 @@ void fixture::update(DMX_Slave* myDMX) {
 /*----------------------------------------
 Update the NeoPixel output values
 ----------------------------------------*/
-void fixture::updateOutput(void) {
+void fixture::updateOutput(Adafruit_NeoPixel* myPixels, uint8_t startPixel) {
 	for (uint16_t i = 0; i < _channels; i++){
-		_pixels.setPixelColor(i, _channel[i].r, _channel[i].g, _channel[i].b);
-		_pixels.setBrightness(_level);
-		_pixels.show();
+		myPixels->setPixelColor((i + startPixel)
+			, uint8_t((double)_channel[i].r * ((double)_level / 255.0))
+			, uint8_t((double)_channel[i].g * ((double)_level / 255.0))
+			, uint8_t((double)_channel[i].b * ((double)_level / 255.0))
+			);
 	}
+	myPixels->show();
 	return;
 }
 
 uint16_t fixture::getLevel(void) {
-  return(_level);
+	return(_level);
 }
 
